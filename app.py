@@ -7,16 +7,23 @@ import os
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI']='sqlite:///'+os.path.join(app.root_path,'data.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS']=False
+
+@app.context_processor
+def inject_user():
+    user=User.query.get(3)
+    return dict(user=user)
+
 # ...
 @app.route('/')
-
 def index():
-    user=User.query.first()
     movies=Movie.query.all()
-    return render_template('index.html', user=user, movies=movies)
+    return render_template('index.html', movies=movies)
+
+@app.errorhandler(404) # 传入要处理的错误代码
+def page_not_found(e): # 接受异常对象作为参数
+    return render_template('404.html'), 404 # 返回模板和状态码
     
 db=SQLAlchemy(app)
-
 class User(db.Model):
     id=db.Column(db.Integer,primary_key=True)
     name=db.Column(db.String(20))
